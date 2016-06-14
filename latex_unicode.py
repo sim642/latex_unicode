@@ -19,6 +19,8 @@
 #
 # History:
 #
+# 2016-06-14, Simmo Saan <simmo.saan@gmail.com>
+#   version 0.2: automatically load XML from W3 website if not available
 # 2016-06-13, Simmo Saan <simmo.saan@gmail.com>
 #   version 0.1: initial script
 #
@@ -31,7 +33,7 @@ from __future__ import print_function
 
 SCRIPT_NAME = "latex_unicode"
 SCRIPT_AUTHOR = "Simmo Saan <simmo.saan@gmail.com>"
-SCRIPT_VERSION = "0.1"
+SCRIPT_VERSION = "0.2"
 SCRIPT_LICENSE = "GPL3"
 SCRIPT_DESC = "Replace LaTeX with unicode representations"
 
