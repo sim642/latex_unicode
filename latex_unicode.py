@@ -64,6 +64,8 @@ SETTINGS = {
 		True)
 }
 
+SETTINGS_PREFIX = "plugins.var.python.{}.".format(SCRIPT_NAME)
+
 hooks = []
 
 xml_path = None
@@ -175,7 +177,7 @@ def config_cb(data, option, value):
 	Handle config.
 	"""
 
-	option = option[len("plugins.var.python.{}.".format(SCRIPT_NAME)):]
+	option = option[len(SETTINGS_PREFIX):]
 
 	if SETTINGS[option][2]:
 		hook_modifiers()
@@ -194,6 +196,6 @@ if __name__ == "__main__" and IMPORT_OK:
 
 			weechat.config_set_desc_plugin(option, "%s (default: \"%s\")" % (value[1], value[0]))
 
-		weechat.hook_config("plugins.var.python.{}.*".format(SCRIPT_NAME), "config_cb", "")
+		weechat.hook_config(SETTINGS_PREFIX + "*", "config_cb", "")
 
 		setup()
