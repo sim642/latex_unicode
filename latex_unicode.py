@@ -55,7 +55,7 @@ chars = {}
 def setup():
 	global chars
 
-	root = etree.parse("latex_unicode/unicode.xml")
+	root = etree.parse(weechat.string_eval_path_home("%h/latex_unicode.xml", "", "", ""))
 	for character in root.xpath("character"):
 		char = character.get("dec")
 		if "-" not in char:
