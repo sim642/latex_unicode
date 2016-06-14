@@ -53,6 +53,17 @@ except ImportError:
 import os
 from lxml import etree
 
+SETTINGS = {
+	"input": (
+		"replace",
+		"replace LaTeX in input: off, display (only display replaced, not send), replace (display and send replaced)"),
+	"buffer": (
+		"on",
+		"replace LaTeX in buffer: off, on")
+}
+
+hooks = []
+
 xml_path = None
 chars = {}
 
@@ -102,12 +113,40 @@ def setup_from_file():
 					chars[latex] = char
 
 	log("loaded XML")
+	hook_modifiers()
+
+def hook_modifiers():
+	global hooks
+	for hook in hooks:
+		weechat.unhook(hook)
+	hooks = []
+
+	input_option = weechat.config_get_plugin("input")
+	if input_option == "off":
+		pass
+	elif input_option == "display":
+		hooks.append(weechat.hook_modifier("input_text_display", "input_text_display_cb", ""))
+	elif input_option == "replace":
+		hooks.append(weechat.hook_modifier("input_text_content", "input_text_content_cb", ""))
+	else:
+		log("invalid value for option 'input'")
+
+	buffer_option = weechat.config_get_plugin("buffer")
+	if weechat.config_string_to_boolean(buffer_option):
+		hooks.append(weechat.hook_modifier("weechat_print", "weechat_print_cb", ""))
 
 def latex_unicode_replace(string):
 	string = string.decode("utf-8")
 	for tex, char in chars.items():
 		string = string.replace(tex + " ", char)
 	return string.encode("utf-8")
+
+def input_text_display_cb(data, modifier, modifier_data, string):
+	"""
+	Handle "input_text_display" modifier.
+	"""
+
+	return latex_unicode_replace(string)
 
 def input_text_content_cb(data, modifier, modifier_data, string):
 	"""
@@ -131,11 +170,14 @@ def command_cb(data, buffer, args):
 
 if __name__ == "__main__" and IMPORT_OK:
 	if weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", ""):
-		weechat.hook_modifier("input_text_content", "input_text_content_cb", "")
-		weechat.hook_modifier("weechat_print", "weechat_print_cb", "")
-
 		weechat.hook_command(SCRIPT_COMMAND, SCRIPT_DESC,
 		"""""", """""", """""",
 		"command_cb", "")
+
+		for option, value in SETTINGS.items():
+			if not weechat.config_is_set_plugin(option):
+				weechat.config_set_plugin(option, value[0])
+
+			weechat.config_set_desc_plugin(option, "%s (default: \"%s\")" % (value[1], value[0]))
 
 		setup()
