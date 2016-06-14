@@ -54,6 +54,9 @@ from lxml import etree
 xml_path = None
 chars = {}
 
+def log(string):
+	weechat.prnt("", "{}: {}".format(SCRIPT_NAME, string))
+
 def setup():
 	global xml_path
 	xml_path = weechat.string_eval_path_home("%h/latex_unicode.xml", "", "", "")
@@ -64,7 +67,7 @@ def setup():
 		setup_from_url()
 
 def setup_from_url():
-	weechat.prnt("", "downloading XML...")
+	log("downloading XML...")
 	weechat.hook_process_hashtable("url:https://www.w3.org/Math/characters/unicode.xml",
 		{
 			"file_out": xml_path
@@ -72,12 +75,12 @@ def setup_from_url():
 		30000, "download_cb", "")
 
 def download_cb(data, command, return_code, out, err):
-	weechat.prnt("", "downloaded XML")
+	log("downloaded XML")
 	setup_from_file()
 	return weechat.WEECHAT_RC_OK
 
 def setup_from_file():
-	weechat.prnt("", "loading XML...")
+	log("loading XML...")
 	global chars
 
 	root = etree.parse(xml_path)
@@ -96,7 +99,7 @@ def setup_from_file():
 				if latex[0] == "\\":
 					chars[latex] = char
 
-	weechat.prnt("", "loaded XML")
+	log("loaded XML")
 
 def latex_unicode_replace(string):
 	string = string.decode("utf-8")
