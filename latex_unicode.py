@@ -48,14 +48,39 @@ except ImportError:
 	print("Get WeeChat now at: http://www.weechat.org/")
 	IMPORT_OK = False
 
+import os
 from lxml import etree
 
+xml_path = None
 chars = {}
 
 def setup():
+	global xml_path
+	xml_path = weechat.string_eval_path_home("%h/latex_unicode.xml", "", "", "")
+
+	if os.path.isfile(xml_path):
+		setup_from_file()
+	else:
+		setup_from_url()
+
+def setup_from_url():
+	weechat.prnt("", "downloading XML...")
+	weechat.hook_process_hashtable("url:https://www.w3.org/Math/characters/unicode.xml",
+		{
+			"file_out": xml_path
+		},
+		30000, "download_cb", "")
+
+def download_cb(data, command, return_code, out, err):
+	weechat.prnt("", "downloaded XML")
+	setup_from_file()
+	return weechat.WEECHAT_RC_OK
+
+def setup_from_file():
+	weechat.prnt("", "loading XML...")
 	global chars
 
-	root = etree.parse(weechat.string_eval_path_home("%h/latex_unicode.xml", "", "", ""))
+	root = etree.parse(xml_path)
 	for character in root.xpath("character"):
 		char = character.get("dec")
 		if "-" not in char:
@@ -71,6 +96,7 @@ def setup():
 				if latex[0] == "\\":
 					chars[latex] = char
 
+	weechat.prnt("", "loaded XML")
 
 def latex_unicode_replace(string):
 	string = string.decode("utf-8")
