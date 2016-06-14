@@ -56,10 +56,12 @@ from lxml import etree
 SETTINGS = {
 	"input": (
 		"replace",
-		"replace LaTeX in input: off, display (only display replaced, not send), replace (display and send replaced)"),
+		"replace LaTeX in input: off, display (only display replaced, not send), replace (display and send replaced)",
+		True),
 	"buffer": (
 		"on",
-		"replace LaTeX in buffer: off, on")
+		"replace LaTeX in buffer: off, on",
+		True)
 }
 
 hooks = []
@@ -168,6 +170,18 @@ def command_cb(data, buffer, args):
 	"""
 	return weechat.WEECHAT_RC_OK
 
+def config_cb(data, option, value):
+	"""
+	Handle config.
+	"""
+
+	option = option[len("plugins.var.python.{}.".format(SCRIPT_NAME)):]
+
+	if SETTINGS[option][2]:
+		hook_modifiers()
+
+	return weechat.WEECHAT_RC_OK
+
 if __name__ == "__main__" and IMPORT_OK:
 	if weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", ""):
 		weechat.hook_command(SCRIPT_COMMAND, SCRIPT_DESC,
@@ -179,5 +193,7 @@ if __name__ == "__main__" and IMPORT_OK:
 				weechat.config_set_plugin(option, value[0])
 
 			weechat.config_set_desc_plugin(option, "%s (default: \"%s\")" % (value[1], value[0]))
+
+		weechat.hook_config("plugins.var.python.{}.*".format(SCRIPT_NAME), "config_cb", "")
 
 		setup()
