@@ -57,8 +57,12 @@ from lxml import etree
 
 SETTINGS = {
 	"input": (
-		"replace",
-		"replace LaTeX in input: off, display (only display replaced, not send), replace (display and send replaced)",
+		"on",
+		"replace LaTeX in input display: off, on",
+		True),
+	"send": (
+		"on",
+		"replace LaTeX in input sending: off, on",
 		True),
 	"buffer": (
 		"on",
@@ -71,7 +75,7 @@ SETTINGS_PREFIX = "plugins.var.python.{}.".format(SCRIPT_NAME)
 hooks = []
 
 xml_path = None
-chars = {}
+replacements = []
 
 def log(string):
 	weechat.prnt("", "{}: {}".format(SCRIPT_NAME, string))
@@ -100,23 +104,25 @@ def download_cb(data, command, return_code, out, err):
 
 def setup_from_file():
 	log("loading XML...")
-	global chars
+	global replacements
 
 	root = etree.parse(xml_path)
 	for character in root.xpath("character"):
-		char = character.get("dec")
-		if "-" not in char:
-			char = unichr(int(char))
+		dec = character.get("dec")
+		if "-" not in dec:
+			char = unichr(int(dec))
 			
 			ams = character.xpath("AMS")
 			if ams:
-				chars[ams[0].text] = char
+				replacements.append((ams[0].text, char))
 
 			latex = character.xpath("latex")
 			if latex:
 				latex = latex[0].text.strip()
 				if latex[0] == "\\":
-					chars[latex] = char
+					replacements.append((latex, char))
+
+	replacements = sorted(replacements, key=lambda replacement: len(replacement[0]), reverse=True)
 
 	log("loaded XML")
 	hook_modifiers()
@@ -128,14 +134,12 @@ def hook_modifiers():
 	hooks = []
 
 	input_option = weechat.config_get_plugin("input")
-	if input_option == "off":
-		pass
-	elif input_option == "display":
+	if weechat.config_string_to_boolean(input_option):
 		hooks.append(weechat.hook_modifier("input_text_display", "input_text_display_cb", ""))
-	elif input_option == "replace":
-		hooks.append(weechat.hook_modifier("input_text_content", "input_text_content_cb", ""))
-	else:
-		log("invalid value for option 'input'")
+
+	send_option = weechat.config_get_plugin("send")
+	if weechat.config_string_to_boolean(send_option):
+		hooks.append(weechat.hook_modifier("input_text_for_buffer", "input_text_for_buffer_cb", ""))
 
 	buffer_option = weechat.config_get_plugin("buffer")
 	if weechat.config_string_to_boolean(buffer_option):
@@ -143,8 +147,8 @@ def hook_modifiers():
 
 def latex_unicode_replace(string):
 	string = string.decode("utf-8")
-	for tex, char in chars.items():
-		string = string.replace(tex + " ", char)
+	for tex, char in replacements:
+		string = string.replace(tex, char)
 	return string.encode("utf-8")
 
 def input_text_display_cb(data, modifier, modifier_data, string):
@@ -154,9 +158,9 @@ def input_text_display_cb(data, modifier, modifier_data, string):
 
 	return latex_unicode_replace(string)
 
-def input_text_content_cb(data, modifier, modifier_data, string):
+def input_text_for_buffer_cb(data, modifier, modifier_data, string):
 	"""
-	Handle "input_text_content" modifier.
+	Handle "input_text_for_buffer" modifier.
 	"""
 
 	return latex_unicode_replace(string)
