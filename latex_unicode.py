@@ -135,15 +135,15 @@ def hook_modifiers():
 
 	input_option = weechat.config_get_plugin("input")
 	if weechat.config_string_to_boolean(input_option):
-		hooks.append(weechat.hook_modifier("input_text_display", "input_text_display_cb", ""))
+		hooks.append(weechat.hook_modifier("input_text_display", "modifier_cb", ""))
 
 	send_option = weechat.config_get_plugin("send")
 	if weechat.config_string_to_boolean(send_option):
-		hooks.append(weechat.hook_modifier("input_text_for_buffer", "input_text_for_buffer_cb", ""))
+		hooks.append(weechat.hook_modifier("input_text_for_buffer", "modifier_cb", ""))
 
 	buffer_option = weechat.config_get_plugin("buffer")
 	if weechat.config_string_to_boolean(buffer_option):
-		hooks.append(weechat.hook_modifier("weechat_print", "weechat_print_cb", ""))
+		hooks.append(weechat.hook_modifier("weechat_print", "modifier_cb", ""))
 
 def latex_unicode_replace(string):
 	string = string.decode("utf-8")
@@ -151,23 +151,9 @@ def latex_unicode_replace(string):
 		string = string.replace(tex, char)
 	return string.encode("utf-8")
 
-def input_text_display_cb(data, modifier, modifier_data, string):
+def modifier_cb(data, modifier, modifier_data, string):
 	"""
-	Handle "input_text_display" modifier.
-	"""
-
-	return latex_unicode_replace(string)
-
-def input_text_for_buffer_cb(data, modifier, modifier_data, string):
-	"""
-	Handle "input_text_for_buffer" modifier.
-	"""
-
-	return latex_unicode_replace(string)
-
-def weechat_print_cb(data, modifier, modifier_data, string):
-	"""
-	Handle "weechat_print" modifier.
+	Handle modifiers.
 	"""
 
 	return latex_unicode_replace(string)
