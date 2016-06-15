@@ -20,6 +20,8 @@
 # History:
 #
 # 2016-06-15, Simmo Saan <simmo.saan@gmail.com>
+#   version 0.5: remove lxml dependency
+# 2016-06-15, Simmo Saan <simmo.saan@gmail.com>
 #   version 0.4: more options for replacement location fine tuning
 # 2016-06-14, Simmo Saan <simmo.saan@gmail.com>
 #   version 0.3: options for disabling/enabling replacements by location
@@ -37,7 +39,7 @@ from __future__ import print_function
 
 SCRIPT_NAME = "latex_unicode"
 SCRIPT_AUTHOR = "Simmo Saan <simmo.saan@gmail.com>"
-SCRIPT_VERSION = "0.4"
+SCRIPT_VERSION = "0.5"
 SCRIPT_LICENSE = "GPL3"
 SCRIPT_DESC = "Replace LaTeX with unicode representations"
 
@@ -55,7 +57,7 @@ except ImportError:
 	IMPORT_OK = False
 
 import os
-from lxml import etree
+import xml.etree.ElementTree as ET
 
 SETTINGS = {
 	"input": (
@@ -108,19 +110,19 @@ def setup_from_file():
 	log("loading XML...")
 	global replacements
 
-	root = etree.parse(xml_path)
-	for character in root.xpath("character"):
+	root = ET.parse(xml_path)
+	for character in root.findall("character"):
 		dec = character.get("dec")
 		if "-" not in dec:
 			char = unichr(int(dec))
 			
-			ams = character.xpath("AMS")
-			if ams:
-				replacements.append((ams[0].text, char))
+			ams = character.find("AMS")
+			if ams is not None:
+				replacements.append((ams.text, char))
 
-			latex = character.xpath("latex")
-			if latex:
-				latex = latex[0].text.strip()
+			latex = character.find("latex")
+			if latex is not None:
+				latex = latex.text.strip()
 				if latex[0] == "\\":
 					replacements.append((latex, char))
 
