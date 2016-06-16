@@ -82,9 +82,13 @@ xml_path = None
 replacements = []
 
 def log(string):
+	"""Log script's message to core buffer."""
+
 	weechat.prnt("", "{}: {}".format(SCRIPT_NAME, string))
 
 def setup():
+	"""Load replacements from available resource."""
+
 	global xml_path
 	xml_path = weechat.string_eval_path_home("%h/latex_unicode.xml", "", "", "")
 
@@ -94,6 +98,8 @@ def setup():
 		setup_from_url()
 
 def setup_from_url():
+	"""Download replacements and store them in weechat home directory."""
+
 	log("downloading XML...")
 	weechat.hook_process_hashtable("url:https://www.w3.org/Math/characters/unicode.xml",
 		{
@@ -102,18 +108,22 @@ def setup_from_url():
 		30000, "download_cb", "")
 
 def download_cb(data, command, return_code, out, err):
+	"""Load downloaded replacements."""
+
 	log("downloaded XML")
 	setup_from_file()
 	return weechat.WEECHAT_RC_OK
 
 def setup_from_file():
+	"""Load replacements from file in weechat home directory."""
+
 	log("loading XML...")
 	global replacements
 
 	root = ET.parse(xml_path)
 	for character in root.findall("character"):
 		dec = character.get("dec")
-		if "-" not in dec:
+		if "-" not in dec: # is not a range of characters
 			char = unichr(int(dec))
 			
 			ams = character.find("AMS")
@@ -123,19 +133,24 @@ def setup_from_file():
 			latex = character.find("latex")
 			if latex is not None:
 				latex = latex.text.strip()
-				if latex[0] == "\\":
+				if latex[0] == "\\": # only add \commands
 					replacements.append((latex, char))
 
-	replacements = sorted(replacements, key=lambda replacement: len(replacement[0]), reverse=True)
+	replacements = sorted(replacements, key=lambda replacement: len(replacement[0]), reverse=True) # sort by tex string length descendingly
 
 	log("loaded XML")
 	hook_modifiers()
 
 def hook_modifiers():
+	"""Update modifier hooks to match settings."""
+
+	# remove existing modifier hooks
 	global hooks
 	for hook in hooks:
 		weechat.unhook(hook)
 	hooks = []
+
+	# add hooks according to settings
 
 	input_option = weechat.config_get_plugin("input")
 	if weechat.config_string_to_boolean(input_option):
@@ -150,32 +165,29 @@ def hook_modifiers():
 		hooks.append(weechat.hook_modifier("weechat_print", "modifier_cb", ""))
 
 def latex_unicode_replace(string):
+	"""Apply replacements to message."""
+
 	string = string.decode("utf-8")
 	for tex, char in replacements:
 		string = string.replace(tex, char)
 	return string.encode("utf-8")
 
 def modifier_cb(data, modifier, modifier_data, string):
-	"""
-	Handle modifiers.
-	"""
+	"""Handle modifier hooks."""
 
 	return latex_unicode_replace(string)
 
 def command_cb(data, buffer, args):
-	"""
-	Handle command.
-	"""
+	"""Handle command hook."""
+
 	return weechat.WEECHAT_RC_OK
 
 def config_cb(data, option, value):
-	"""
-	Handle config.
-	"""
+	"""Handle config hooks (option changes)."""
 
 	option = option[len(SETTINGS_PREFIX):]
 
-	if SETTINGS[option][2]:
+	if SETTINGS[option][2]: # if option requires modifier hooks update
 		hook_modifiers()
 
 	return weechat.WEECHAT_RC_OK
