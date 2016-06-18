@@ -19,6 +19,8 @@
 #
 # History:
 #
+# 2016-06-17, Simmo Saan <simmo.saan@gmail.com>
+#   version 0.6: add subcommands for manual reload/redownload
 # 2016-06-15, Simmo Saan <simmo.saan@gmail.com>
 #   version 0.5: remove lxml dependency
 # 2016-06-15, Simmo Saan <simmo.saan@gmail.com>
@@ -39,7 +41,7 @@ from __future__ import print_function
 
 SCRIPT_NAME = "latex_unicode"
 SCRIPT_AUTHOR = "Simmo Saan <simmo.saan@gmail.com>"
-SCRIPT_VERSION = "0.5"
+SCRIPT_VERSION = "0.6"
 SCRIPT_LICENSE = "GPL3"
 SCRIPT_DESC = "Replace LaTeX with unicode representations"
 
@@ -85,6 +87,11 @@ def log(string):
 	"""Log script's message to core buffer."""
 
 	weechat.prnt("", "{}: {}".format(SCRIPT_NAME, string))
+
+def error(string):
+	"""Log script's error to core buffer."""
+
+	weechat.prnt("", "{}{}: {}".format(weechat.prefix("error"), SCRIPT_NAME, string))
 
 def setup():
 	"""Load replacements from available resource."""
@@ -180,7 +187,18 @@ def modifier_cb(data, modifier, modifier_data, string):
 def command_cb(data, buffer, args):
 	"""Handle command hook."""
 
-	return weechat.WEECHAT_RC_OK
+	args = args.split()
+
+	if len(args) >= 1:
+		if args[0] == "reload":
+			setup_from_file()
+			return weechat.WEECHAT_RC_OK
+		elif args[0] == "redownload":
+			setup_from_url()
+			return weechat.WEECHAT_RC_OK
+
+	error("invalid arguments")
+	return weechat.WEECHAT_RC_ERROR
 
 def config_cb(data, option, value):
 	"""Handle config hooks (option changes)."""
@@ -195,7 +213,12 @@ def config_cb(data, option, value):
 if __name__ == "__main__" and IMPORT_OK:
 	if weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", ""):
 		weechat.hook_command(SCRIPT_COMMAND, SCRIPT_DESC,
-		"""""", """""", """""",
+"""reload
+ || redownload""",
+"""    reload: reload replacements from XML file
+redownload: redownload replacements XML file and load it""",
+"""reload
+ || redownload""",
 		"command_cb", "")
 
 		for option, value in SETTINGS.items():
