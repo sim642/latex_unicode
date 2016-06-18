@@ -252,13 +252,15 @@ def replace_xml_replacements(string):
 		string = string.replace(tex, char)
 	return string
 
-def replace_script(match, script):
+def replace_script(string, script):
 	"""Regex substitution function for scripts."""
 
-	if script == 1 and match.group(2) is not None and match.group(2).isalpha(): # if ungrouped letter subscript
-		return match.group(0)
+	grouped = string.startswith("{") and string.endswith("}")
+	if grouped:
+		string = string[1:-1]
 
-	string = match.group(1) or match.group(2)
+	if script == 1 and not grouped and string.isalpha(): # if ungrouped letter subscript
+		return None
 
 	chars = list(string)
 	all = True
@@ -272,13 +274,27 @@ def replace_script(match, script):
 	if all:
 		return "".join(chars)
 	else:
-		return match.group(0)
+		return None
 
 def replace_scripts(string):
 	"""Apply super- and subscript replacements to message."""
 
-	string = re.sub(r"\^(?:{([^}]+)}|(.))", lambda match: replace_script(match, 0), string, flags=re.UNICODE)
-	string = re.sub(r"_(?:{([^}]+)}|(.))", lambda match: replace_script(match, 1), string, flags=re.UNICODE)
+	def replace(match, script):
+		replaced = replace_script(match.group(1), script)
+		return replaced if replaced is not None else match.group(0)
+
+	string = re.sub(r"\^({[^}]+}|.)", lambda match: replace(match, 0), string, flags=re.UNICODE)
+	string = re.sub(r"_({[^}]+}|.)", lambda match: replace(match, 1), string, flags=re.UNICODE)
+
+	def replace_frac(match):
+		replaced1 = replace_script(match.group(1), 0)
+		replaced2 = replace_script(match.group(2), 1)
+		if replaced1 is not None and replaced2 is not None:
+			return replaced1 + u"⁄" + replaced2
+		else:
+			return match.group(0)
+
+	string = re.sub(r"\\frac({[^}]+}|.)({[^}]+}|.)", replace_frac, string, flags=re.UNICODE)
 	return string
 
 def latex_unicode_replace(string):
