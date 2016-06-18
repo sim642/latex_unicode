@@ -94,6 +94,52 @@ scripts = {
 	u"7": (u"⁷", u"₇"),
 	u"8": (u"⁸", u"₈"),
 	u"9": (u"⁹", u"₉"),
+
+	u"A": (u"ᴬ", None),
+	u"B": (u"ᴮ", None),
+	u"D": (u"ᴰ", None),
+	u"E": (u"ᴱ", None),
+	u"G": (u"ᴳ", None),
+	u"H": (u"ᴴ", None),
+	u"I": (u"ᴵ", None),
+	u"J": (u"ᴶ", None),
+	u"K": (u"ᴷ", None),
+	u"L": (u"ᴸ", None),
+	u"M": (u"ᴹ", None),
+	u"N": (u"ᴺ", None),
+	u"O": (u"ᴼ", None),
+	u"P": (u"ᴾ", None),
+	u"R": (u"ᴿ", None),
+	u"T": (u"ᵀ", None),
+	u"U": (u"ᵁ", None),
+	u"V": (u"ⱽ", None),
+	u"W": (u"ᵂ", None),
+
+	u"a": (u"ᵃ", u"ₐ"),
+	u"b": (u"ᵇ", None),
+	u"c": (u"ᶜ", None),
+	u"d": (u"ᵈ", None),
+	u"e": (u"ᵉ", u"ₑ"),
+	u"f": (u"ᶠ", None),
+	u"g": (u"ᵍ", None),
+	u"h": (u"ʰ", u"ₕ"),
+	u"i": (u"ⁱ", u"ᵢ"),
+	u"j": (u"ʲ", u"ⱼ"),
+	u"k": (u"ᵏ", u"ₖ"),
+	u"l": (u"ˡ", u"ₗ"),
+	u"m": (u"ᵐ", u"ₘ"),
+	u"n": (u"ⁿ", u"ₙ"),
+	u"o": (u"ᵒ", u"ₒ"),
+	u"p": (u"ᵖ", u"ₚ"),
+	u"r": (u"ʳ", u"ᵣ"),
+	u"s": (u"ˢ", u"ₛ"),
+	u"t": (u"ᵗ", u"ₜ"),
+	u"u": (u"ᵘ", u"ᵤ"),
+	u"v": (u"ᵛ", u"ᵥ"),
+	u"w": (u"ʷ", None),
+	u"x": (u"ˣ", u"ₓ"),
+	u"y": (u"ʸ", None),
+	u"z": (u"ᶻ", None),
 }
 
 def log(string):
@@ -192,12 +238,17 @@ def replace_xml_replacements(string):
 	return string
 
 def replace_script(match, script):
+	"""Regex substitution function for scripts."""
+
+	if script == 1 and match.group(1) is not None and match.group(1).isalpha(): # if ungrouped letter subscript
+		return match.group(0)
+
 	string = match.group(1) or match.group(2)
 
 	chars = list(string)
 	all = True
 	for i in xrange(len(chars)):
-		if chars[i] in scripts:
+		if chars[i] in scripts and scripts[chars[i]][script] is not None:
 			chars[i] = scripts[chars[i]][script]
 		else:
 			all = False
