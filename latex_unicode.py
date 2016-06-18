@@ -140,6 +140,21 @@ scripts = {
 	u"x": (u"ˣ", u"ₓ"),
 	u"y": (u"ʸ", None),
 	u"z": (u"ᶻ", None),
+
+	u"+": (u"⁺", u"₊"),
+	u"-": (u"⁻", u"₋"),
+	u"=": (u"⁼", u"₌"),
+	u"(": (u"⁽", u"₍"),
+	u")": (u"⁾", u"₎"),
+
+	u"β": (u"ᵝ", u"ᵦ"),
+	u"γ": (u"ᵞ", u"ᵧ"),
+	u"δ": (u"ᵟ", None),
+	u"θ": (u"ᶿ", None),
+	u"ι": (u"ᶥ", None),
+	u"ρ": (None, u"ᵨ"),
+	u"φ": (u"ᵠ", u"ᵩ"),
+	u"χ": (u"ᵡ", u"ᵪ"),
 }
 
 def log(string):
@@ -240,7 +255,7 @@ def replace_xml_replacements(string):
 def replace_script(match, script):
 	"""Regex substitution function for scripts."""
 
-	if script == 1 and match.group(1) is not None and match.group(1).isalpha(): # if ungrouped letter subscript
+	if script == 1 and match.group(2) is not None and match.group(2).isalpha(): # if ungrouped letter subscript
 		return match.group(0)
 
 	string = match.group(1) or match.group(2)
@@ -262,8 +277,8 @@ def replace_script(match, script):
 def replace_scripts(string):
 	"""Apply super- and subscript replacements to message."""
 
-	string = re.sub(r"\^(?:(\w)|{(\w+)})", lambda match: replace_script(match, 0), string, flags=re.UNICODE)
-	string = re.sub(r"_(?:(\w)|{(\w+)})", lambda match: replace_script(match, 1), string, flags=re.UNICODE)
+	string = re.sub(r"\^(?:{([^}]+)}|(.))", lambda match: replace_script(match, 0), string, flags=re.UNICODE)
+	string = re.sub(r"_(?:{([^}]+)}|(.))", lambda match: replace_script(match, 1), string, flags=re.UNICODE)
 	return string
 
 def latex_unicode_replace(string):
