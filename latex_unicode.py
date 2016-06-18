@@ -60,6 +60,7 @@ except ImportError:
 
 import os
 import xml.etree.ElementTree as ET
+import re
 
 SETTINGS = {
 	"input": (
@@ -82,6 +83,18 @@ hooks = []
 
 xml_path = None
 replacements = []
+scripts = {
+	u"0": (u"⁰", u"₀"),
+	u"1": (u"¹", u"₁"),
+	u"2": (u"²", u"₂"),
+	u"3": (u"³", u"₃"),
+	u"4": (u"⁴", u"₄"),
+	u"5": (u"⁵", u"₅"),
+	u"6": (u"⁶", u"₆"),
+	u"7": (u"⁷", u"₇"),
+	u"8": (u"⁸", u"₈"),
+	u"9": (u"⁹", u"₉"),
+}
 
 def log(string):
 	"""Log script's message to core buffer."""
@@ -171,12 +184,43 @@ def hook_modifiers():
 	if weechat.config_string_to_boolean(buffer_option):
 		hooks.append(weechat.hook_modifier("weechat_print", "modifier_cb", ""))
 
-def latex_unicode_replace(string):
-	"""Apply replacements to message."""
+def replace_xml_replacements(string):
+	"""Apply XML replacements to message."""
 
-	string = string.decode("utf-8")
 	for tex, char in replacements:
 		string = string.replace(tex, char)
+	return string
+
+def replace_script(match, script):
+	string = match.group(1) or match.group(2)
+
+	chars = list(string)
+	all = True
+	for i in xrange(len(chars)):
+		if chars[i] in scripts:
+			chars[i] = scripts[chars[i]][script]
+		else:
+			all = False
+			break
+
+	if all:
+		return "".join(chars)
+	else:
+		return match.group(0)
+
+def replace_scripts(string):
+	"""Apply super- and subscript replacements to message."""
+
+	string = re.sub(r"\^(?:(\w)|{(\w+)})", lambda match: replace_script(match, 0), string, flags=re.UNICODE)
+	string = re.sub(r"_(?:(\w)|{(\w+)})", lambda match: replace_script(match, 1), string, flags=re.UNICODE)
+	return string
+
+def latex_unicode_replace(string):
+	"""Apply all latex_unicode replacements."""
+
+	string = string.decode("utf-8")
+	string = replace_xml_replacements(string)
+	string = replace_scripts(string)
 	return string.encode("utf-8")
 
 def modifier_cb(data, modifier, modifier_data, string):
