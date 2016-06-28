@@ -158,6 +158,29 @@ scripts = {
 	u"φ": (u"ᵠ", u"ᵩ"),
 	u"χ": (u"ᵡ", u"ᵪ"),
 }
+# https://en.wikipedia.org/wiki/Number_Forms
+vulgar_fractions = {
+	(u"1", u"4"): u"¼",
+	(u"1", u"2"): u"½",
+	(u"3", u"4"): u"¾",
+	(u"1", u"4"): u"¼",
+	(u"1", u"7"): u"⅐",
+	(u"1", u"9"): u"⅑",
+	(u"1", u"10"): u"⅒",
+	(u"1", u"3"): u"⅓",
+	(u"2", u"3"): u"⅔",
+	(u"1", u"5"): u"⅕",
+	(u"2", u"5"): u"⅖",
+	(u"3", u"5"): u"⅗",
+	(u"4", u"5"): u"⅘",
+	(u"1", u"6"): u"⅙",
+	(u"5", u"6"): u"⅚",
+	(u"1", u"8"): u"⅛",
+	(u"3", u"8"): u"⅜",
+	(u"5", u"8"): u"⅝",
+	(u"7", u"8"): u"⅞",
+	(u"0", u"3"): u"↉",
+}
 
 def log(string):
 	"""Log script's message to core buffer."""
@@ -254,6 +277,14 @@ def replace_xml_replacements(string):
 		string = string.replace(tex, char)
 	return string
 
+def latex_ungroup(string):
+	"""Remove grouping curly braces if present."""
+
+	grouped = string.startswith("{") and string.endswith("}")
+	if grouped:
+		string = string[1:-1]
+	return string
+
 def replace_script(string, script):
 	"""Regex substitution function for scripts."""
 
@@ -289,6 +320,10 @@ def replace_scripts(string):
 	string = re.sub(r"_({[^}]+}|.)", lambda match: replace(match, 1), string, flags=re.UNICODE)
 
 	def replace_frac(match):
+		vulgar_pair = (latex_ungroup(match.group(1)), latex_ungroup(match.group(2)))
+		if vulgar_pair in vulgar_fractions:
+			return vulgar_fractions[vulgar_pair]
+
 		replaced1 = replace_script(match.group(1), 0)
 		replaced2 = replace_script(match.group(2), 1)
 		if replaced1 is not None and replaced2 is not None:
