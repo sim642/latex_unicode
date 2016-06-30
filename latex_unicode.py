@@ -19,6 +19,8 @@
 #
 # History:
 #
+# 2016-06-30, Simmo Saan <simmo.saan@gmail.com>
+#   version 0.8: support vulgar fractions and \sqrt
 # 2016-06-18, Simmo Saan <simmo.saan@gmail.com>
 #   version 0.7: support super-, subscripts and \frac
 # 2016-06-17, Simmo Saan <simmo.saan@gmail.com>
@@ -43,7 +45,7 @@ from __future__ import print_function
 
 SCRIPT_NAME = "latex_unicode"
 SCRIPT_AUTHOR = "Simmo Saan <simmo.saan@gmail.com>"
-SCRIPT_VERSION = "0.7"
+SCRIPT_VERSION = "0.8"
 SCRIPT_LICENSE = "GPL3"
 SCRIPT_DESC = "Replace LaTeX with unicode representations"
 
