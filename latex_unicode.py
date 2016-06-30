@@ -334,12 +334,18 @@ def replace_scripts(string):
 	string = re.sub(r"\\frac({[^}]+}|[^{}])({[^}]+}|[^{}])", replace_frac, string, flags=re.UNICODE)
 
 	def replace_sqrt(match):
+		under = match.group(2)
+		if under is not None:
+			under = re.sub(r"(.)", u"\\1\u0305", latex_ungroup(under), flags=re.UNICODE)
+		else:
+			under = ""
+
 		if match.group(1) is None:
-			return u"√" + (match.group(2) or "")
+			return u"√" + under
 
 		replaced = replace_script(match.group(1), 0)
 		if replaced is not None:
-			return replaced + u"√" + (match.group(2) or "")
+			return replaced + u"√" + under
 		else:
 			return match.group(0)
 
