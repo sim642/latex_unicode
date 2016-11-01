@@ -294,9 +294,6 @@ def replace_script(string, script):
 	if grouped:
 		string = string[1:-1]
 
-	if script == 1 and not grouped and string.isalpha(): # if ungrouped letter subscript
-		return None
-
 	chars = list(string)
 	all = True
 	for i in xrange(len(chars)):
@@ -318,8 +315,8 @@ def replace_scripts(string):
 		replaced = replace_script(match.group(1), script)
 		return replaced if replaced is not None else match.group(0)
 
-	string = re.sub(r"\^({[^}]+}|[^{}])", lambda match: replace(match, 0), string, flags=re.UNICODE)
-	string = re.sub(r"_({[^}]+}|[^{}])", lambda match: replace(match, 1), string, flags=re.UNICODE)
+	string = re.sub(r"\^({[^}]+})", lambda match: replace(match, 0), string, flags=re.UNICODE)
+	string = re.sub(r"_({[^}]+})", lambda match: replace(match, 1), string, flags=re.UNICODE)
 
 	def replace_frac(match):
 		vulgar_pair = (latex_ungroup(match.group(1)), latex_ungroup(match.group(2)))
