@@ -44,7 +44,6 @@ Replace LaTeX with unicode representations
 """
 
 from __future__ import print_function
-from builtins import chr, range
 
 SCRIPT_NAME = "latex_unicode"
 SCRIPT_AUTHOR = "Simmo Saan <simmo.saan@gmail.com>"
@@ -69,6 +68,11 @@ import os
 import xml.etree.ElementTree as ET
 import re
 import sys
+
+PY2 = sys.version_info < (3,)
+if PY2:
+	chr = unichr
+	range = xrange
 
 SETTINGS = {
 	"input": (
@@ -359,13 +363,13 @@ def replace_scripts(string):
 def latex_unicode_replace(string):
 	"""Apply all latex_unicode replacements."""
 
-	if sys.version_info < (3,):
+	if PY2:
 		string = string.decode("utf-8")
 
 	string = replace_xml_replacements(string)
 	string = replace_scripts(string)
 
-	if sys.version_info < (3,):
+	if PY2:
 		string = string.encode("utf-8")
 
 	return string
