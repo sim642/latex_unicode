@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2016 by Simmo Saan <simmo.saan@gmail.com>
+# Copyright (c) 2016-2018 by Simmo Saan <simmo.saan@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #
 # History:
 #
+# 2018-06-19, Simmo Saan <simmo.saan@gmail.com>
+#   version 1.0: add Python 2/3 compatibility
 # 2016-11-01, Simmo Saan <simmo.saan@gmail.com>
 #   version 0.9: remove ungrouped script replacement
 # 2016-06-30, Simmo Saan <simmo.saan@gmail.com>
@@ -47,7 +49,7 @@ from __future__ import print_function
 
 SCRIPT_NAME = "latex_unicode"
 SCRIPT_AUTHOR = "Simmo Saan <simmo.saan@gmail.com>"
-SCRIPT_VERSION = "0.9"
+SCRIPT_VERSION = "1.0"
 SCRIPT_LICENSE = "GPL3"
 SCRIPT_DESC = "Replace LaTeX with unicode representations"
 
