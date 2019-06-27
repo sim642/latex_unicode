@@ -415,7 +415,7 @@ if __name__ == "__main__" and IMPORT_OK:
 """    reload: reload replacements from XML file
 redownload: redownload replacements XML file and load it""",
 """reload
- || redownload""",
+ || redownload""".replace("\n", ""),
 		"command_cb", "")
 
 		for option, value in SETTINGS.items():
